@@ -32,19 +32,23 @@ class Document
 		return $orm;
 	}
 	function getEntities() {
+		if (isset($this->entities)) {
+			return $this->entities;
+		}
+
+		$this->entities = [];
+
 		// mwb->document->grtXml->
 		// mwb->document->grt->
 		// mwb->document->workbench->
 		// mwb->document->grtElement
 		// mwb->document->documentElement
-		if (isset($this->entities)) {
-			return $this->entities;
-		}
-		$this->entities = [];
 		foreach ($this->mwb->doc->documentElement->physicalModels[0]->catalog->schemata[0]->tables as $table) {
-			$entity = new Entity($this->nameing->entityify($table->name));
+			$entity = new Entity($table);
+			$entity->setNameingStrategy($this->nameing);
 			$this->entities[] = $entity;
 		}
+
 		return $this->entities;
 	}
 }

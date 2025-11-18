@@ -26,5 +26,14 @@ class NameingSingularize extends NameingAbstract
 		$name = implode('', $parts);
 		return $name;
 	}
+
+	public function propertyify(string $code) {
+		$names = explode('_', $code);
+		$parts = array_map('ucfirst', $names);
+		$name = implode('', $parts);
+		$name = lcfirst($name);
+		return $name;
+	}
+
 }
 
