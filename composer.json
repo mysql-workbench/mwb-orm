@@ -1,15 +1,3 @@
-# ORM classes from MySQL Workbench (*.mwb)
-
-# Doc Developper
-
-## Init repository
-
-```console
-composer init --name="mysql-workbench/mwb-orm" --description="ORM from MySQL Workbench" --type="library" --author="SVG Animate <glash.gnome@gmail.com>" --stability dev --license="GPL-3.0" --autoload="psr-4"
-```
-
-Edit as :
-```json
 {
     "name": "mysql-workbench/mwb-orm",
     "description": "ORM from MySQL Workbench",
@@ -34,17 +22,7 @@ Edit as :
         }
     ],
     "require": {
-        "mysql-workbench/mwb-dom": "^1.0.2"
+        "mysql-workbench/mwb-dom": "^1.0.2",
+        "doctrine/inflector": "^2.1"
     }
 }
-```
-
-Reload dependencies:
-```console
-$ composer update
-```
-
-```console
-composer require doctrine/inflector "^2.1"
-```
-
