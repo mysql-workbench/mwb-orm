@@ -5,15 +5,35 @@ namespace Mwb\Orm;
 use \Mwb\Grt\Db\Table;
 
 use \Mwb\Orm\NameingAbstract;
+use \Mwb\Orm\Document;
+use \Mwb\Orm\Relation;
+use \Mwb\Orm\Property;
 
 class Entity
 {
-	public Table $table;
+	public Document $owner;
 	protected NameingAbstract $nameing;
-	protected ?string $name = Null;
-	protected ?array $properties = Null;
+	public Table $table;
+	private ?array $primaryKey = Null;
+	private ?array $foreignPrimary = Null;
+	private ?array $foreignPrimaryUnique = Null;
 
-	public function __construct(Table $table) {
+	protected ?string $name = Null;
+	/*
+	 * @var \ArrayObject<\Mwb\Orm\Property> $properties
+	 */
+	protected ?\ArrayObject $properties = Null;
+	/*
+	 * @var \ArrayObject<\Mwb\Orm\Relation> $relations
+	 */
+	protected \ArrayObject $relations;
+	private bool $relationLoaded = False;
+
+	public function __construct(Document $owner) {
+		$this->owner = $owner;
+		$this->relations = new \ArrayObject();
+	}
+	public function setTable(Table $table) {
 		$this->table = $table;
 	}
 	public function setNameingStrategy(NameingAbstract $nameing) {
@@ -25,48 +45,88 @@ class Entity
 		}
 		return $this->name;
 	}
+	//public function getProperties() {
+	//public function getProperties('PK') {
+	//public function getProperties('-PK') {
+	//public function getProperties('FK') {
+	//public function getProperties('-FK') {
+	//public function getProperties('PK-FK') {
+	//public function getProperties('FK-PK') {
+	//public function getProperties('FK+PK') {
+	//public function getProperties('-PK-FK') {
 	public function getProperties() {
 		if (isset($this->properties)) {
 			return $this->properties;
 		}
 
-		$this->properties = [];
+		$this->properties = new \ArrayObject();
 		foreach ($this->table->columns as $column) {
-			$property = new Property($column);
+			$property = new Property($this);
+			$property->setColumn($column);
 			$property->setNameingStrategy($this->nameing);
-			$this->properties[] = $property;
+			$this->properties[$property->getName()] = $property;
 		}
 		return $this->properties;
 	}
+	public function addRelation(Relation $relation) {
+		$this->relations[] = $relation;
+	}
 	public function getRelations() {
-		/*
+		if ($this->relationLoaded) {
+			return $this->relations;
+		}
 
-    $this->table->foreignKeys = 
-                  <value _ptr_="0x55a0c46527a0" type="list" content-type="object" content-struct-name="db.mysql.ForeignKey" key="foreignKeys">
-                    <value type="object" struct-name="db.mysql.ForeignKey" id="a9869086-bfc1-11ef-98ea-0242384af379" struct-checksum="0x70a8fc40">
-                      <link type="object" struct-name="db.mysql.Table" key="referencedTable">42948398-bfc0-11ef-98ea-0242384af379</link>
-                      <value _ptr_="0x55a0c4654a20" type="list" content-type="object" content-struct-name="db.Column" key="columns">
-                        <link type="object">e0cd9324-bfc0-11ef-98ea-0242384af379</link>
-                      </value>
-                      <value _ptr_="0x55a0c4654a90" type="dict" key="customData"/>
-                      <value type="int" key="deferability">0</value>
-                      <value type="string" key="deleteRule">NO ACTION</value>
-                      <link type="object" struct-name="db.Index" key="index">a9869089-bfc1-11ef-98ea-0242384af379</link>
-                      <value type="int" key="mandatory">1</value>
-                      <value type="int" key="many">1</value>
-                      <value type="int" key="modelOnly">0</value>
-                      <link type="object" struct-name="db.Table" key="owner">a4406cf6-bfc0-11ef-98ea-0242384af379</link>
-                      <value _ptr_="0x55a0c4654b20" type="list" content-type="object" content-struct-name="db.Column" key="referencedColumns">
-                        <link type="object">5f6ea156-bfc0-11ef-98ea-0242384af379</link>
-                      </value>
-                      <value type="int" key="referencedMandatory">1</value>
-                      <value type="string" key="updateRule">NO ACTION</value>
-                      <value type="string" key="comment"></value>
-                      <value type="string" key="name">fk_companies_associates_companies</value>
-                      <value type="string" key="oldName">fk_companies_associates_companies</value>
-                    </value>
+		$entities = $this->owner->getEntities();
 
-		*/
+		$referencingTable = $this->table;
+
+		$referencingPrimaryKey = [];
+		foreach($referencingTable->indices as $index) {
+			if (!$index->isPrimary) {
+				continue;
+			}
+			foreach($index->columns as $ndexColumn) {
+				$referencingPrimaryKey[] = $ndexColumn->name;
+			}
+		}
+
+		foreach ($referencingTable->foreignKeys as $foreignKey) {
+			$referencingForeignKey = [];
+			
+			foreach($foreignKey->columns as $column) {
+				if ($column) {
+					$referencingForeignKey[] = $column->name;
+				}
+			}
+
+			$type = Null;
+			if (!array_diff($referencingPrimaryKey, $referencingForeignKey)) {
+				$type = Relation::ONE_TO_ONE;
+				$relation = new Relation($type);
+			} else {
+				$type = Relation::MANY_TO_ONE;
+				$relation = new Relation($type);
+			}
+
+			$referencedEntity = $entities[$this->nameing->entityify($foreignKey->referencedTable->name)];
+
+			$relation->setReferencedEntity($referencedEntity);
+			$relation->setReferencingEntity($this);
+			$this->addRelation($relation);
+
+			$relationReversed = Null;	
+			if (Relation::ONE_TO_ONE == $type) 
+				$relationReversed = new Relation(Relation::ONE_TO_ONE);
+			else
+				$relationReversed = new Relation(Relation::ONE_TO_MANY);
+
+			$relationReversed->setReferencedEntity($this);
+			$relationReversed->setReferencingEntity($referencedEntity);
+			$referencedEntity->addRelation($relationReversed);
+		}
+
+		$this->relationLoaded = True;
+		return $this->relations;
 	}
 }
 

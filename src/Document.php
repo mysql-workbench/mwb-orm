@@ -15,9 +15,9 @@ class Document
 
 	protected ?MwbDocument $mwb = Null;
 	/*
-	 * @var array<\Mwb\Orm\Entity> $entities
+	 * @var \ArrayObject<\Mwb\Orm\Entity> $entities
 	 */
-	protected ?array $entities = Null;
+	protected ?\ArrayObject $entities = Null;
 
 	protected function __construct() {
 		$this->nameing = new NameingSingularize();
@@ -36,17 +36,18 @@ class Document
 			return $this->entities;
 		}
 
-		$this->entities = [];
+		$this->entities = new \ArrayObject();
 
 		// mwb->document->grtXml->
 		// mwb->document->grt->
 		// mwb->document->workbench->
 		// mwb->document->grtElement
 		// mwb->document->documentElement
-		foreach ($this->mwb->doc->documentElement->physicalModels[0]->catalog->schemata[0]->tables as $table) {
-			$entity = new Entity($table);
+		foreach ($this->mwb->doc->documentElement->physicalModels[0]->catalog->schemata[0]->tables as $name => $table) {
+			$entity = new Entity($this);
 			$entity->setNameingStrategy($this->nameing);
-			$this->entities[] = $entity;
+			$entity->setTable($table);
+			$this->entities[$entity->getName()] = $entity;
 		}
 
 		return $this->entities;

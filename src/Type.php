@@ -3,16 +3,21 @@
 namespace Mwb\Orm;
 
 use Mwb\Grt\Db\SimpleDatatype;
-//use Mwb\Grt\Db\UserDatatype;
+use Mwb\Grt\Db\UserDatatype;
+
+use Mwb\Orm\Property;
 
 class Type
 {
-	public ?SimpleDatatype $simpleDataType = Null;
+	public Property $owner = Null;
+	public null|SimpleDatatype|UserDatatype $dataType = Null;// Grt_Object
 	protected ?string $name = Null;
 
-	public function __construct(?SimpleDatatype $simpleDataType) {
-		$this->simpleDataType = $simpleDataType;
-		// UserDatatype
+	public function __construct(Property $owner) {
+		$this->owner = $owner;
+	}
+	public function setDataType(null|SimpleDatatype|UserDatatype $dataType) {
+		$this->dataType = $dataType;
 	}
 
 	public function getName() {
@@ -25,6 +30,5 @@ class Type
 		$this->name = 'mixed';// int|float|string|array|object|null
 		return $this->name;
 	}
-
 }
 

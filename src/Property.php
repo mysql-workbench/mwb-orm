@@ -9,13 +9,18 @@ use \Mwb\Orm\Type;
 
 class Property
 {
-	public Column $column;
+	public Entity $owner;
 	protected NameingAbstract $nameing;
+	public Column $column;
+
 	protected ?string $name = Null;
 	protected ?Type $type = Null;
-	protected ?array $relations = Null;
+	//protected ?array $relations = Null;
 
-	public function __construct(Column $column) {
+	public function __construct(Entity $owner) {
+		$this->owner = $owner;
+	}
+	public function setColumn(Column $column) {
 		$this->column = $column;
 	}
 	public function setNameingStrategy(NameingAbstract $nameing) {
@@ -30,8 +35,11 @@ class Property
 		return $this->name;
 	}
 	public function getType() {
-		/*
+		if (isset($this->type)) {
+			return $this->type;
+		}
 
+		/*
     $this->column = <value type="object" struct-name="db.mysql.Column" id="5f6ea156-bfc0-11ef-98ea-0242384af379" struct-checksum="0xba88e21c">
                       <value type="int" key="autoIncrement">1</value>
                       <value type="string" key="expression"></value>
@@ -55,20 +63,14 @@ class Property
                       <link type="object" struct-name="GrtObject" key="owner">42948398-bfc0-11ef-98ea-0242384af379</link>
                     </value>
 		*/
-		if (isset($this->type)) {
-			return $this->type;
+		if (isset($this->column->userType)) {
+			$this->type = new Type($this);
+			$this->type->setDataType($this->column->userType);
+		} else {
+			$this->type = new Type($this);
+			$this->type->setDataType($this->column->simpleType);
 		}
-
-		$this->type = new Type($this->column->simpleType);
 		return $this->type;
-	}
-	public function getRelations() {
-		if (isset($this->relations)) {
-			return $this->relations;
-		}
-
-		$this->relations = [];
-		return $this->relations;
 	}
 }
 
