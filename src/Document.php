@@ -19,18 +19,32 @@ class Document
 	 */
 	protected ?\ArrayObject $entities = Null;
 
-	protected function __construct() {
+	public function __construct() {
 		$this->nameing = new NameingSingularize();
 	}
 
-	static function load($filepath) {
+	public function __call(string $name, array $arguments) {
+		if ($name === 'load') {
+		    // Appel de la méthode statique depuis l'instance
+		    return self::load(array_pop($arguments), $this);
+		}
+
+		//throw new BadMethodCallException("Méthode $name inexistante");
+	}
+
+	static function load($filepath, ?Document $instance=Null) {
 		if (!realpath($filepath)) {
 			throw new \Exception("File not found '$filepath'");
 		}
-		$orm = new self();
-		$orm->mwb = MwbDocument::load($filepath);
-		return $orm;
+		if ($instance instanceof \Mwb\Orm\Document) {
+			$instance->mwb = MwbDocument::load($filepath);
+		} else {
+			$instance = new self();
+			$instance->mwb = MwbDocument::load($filepath);
+			return $instance;
+		}
 	}
+
 	function getEntities() {
 		if (isset($this->entities)) {
 			return $this->entities;
