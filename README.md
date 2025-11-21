@@ -1,50 +1,18 @@
 # ORM classes from MySQL Workbench (*.mwb)
 
-# Doc Developper
+## Project Overview
+The primary goal of this project is to analyze Mwb\Document (repository `mysql-workbench/mwb-dom`) data for better decision-making Generation. We focus on:
 
-## Init repository
+    - Create Entities (which Db\Table are most popular, Orm\Property, etc)
+    - Inventory relations (OneToMany, ManyToOne, OneToOne)
 
-```console
-composer init --name="mysql-workbench/mwb-orm" --description="ORM from MySQL Workbench" --type="library" --author="SVG Animate <glash.gnome@gmail.com>" --stability dev --license="GPL-3.0" --autoload="psr-4"
-```
+## How to Use
+    - Clone or Download this repository.
+    - Create the Database:
+        Use the provided data/sakila.mwb file to create the schema and populate the tables.
+        Alternatively, import your schema from MySQL Workbench import.
 
-Edit as :
-```json
-{
-    "name": "mysql-workbench/mwb-orm",
-    "description": "ORM from MySQL Workbench",
-    "type": "library",
-    "license": "GPL-3.0",
-    "autoload": {
-        "psr-4": {
-            "Mwb\\Orm\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "SVG Animate",
-            "email": "glash.gnome@gmail.com"
-        }
-    ],
-    "minimum-stability": "dev",
-    "repositories": [
-        {
-            "type": "github",
-            "url": "https://github.com/mysql-workbench/mwb-dom"
-        }
-    ],
-    "require": {
-        "mysql-workbench/mwb-dom": "^1.0.2"
-    }
-}
-```
+## Future Enhancements
+    - Do relation ManyToMany
 
-Reload dependencies:
-```console
-$ composer update
-```
-
-```console
-composer require doctrine/inflector "^2.1"
-```
-
+Thank you for checking out this project! Feel free to explore, fork, and submit pull requests with improvements or suggestions. If you have any questions, create an issue or contact the project maintainer.
