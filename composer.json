@@ -1,7 +1,7 @@
 {
     "name": "mysql-workbench/mwb-orm",
     "description": "ORM from MySQL Workbench",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "type": "library",
     "license": "GPL-3.0",
     "autoload": {
@@ -22,7 +22,7 @@
         }
     ],
     "require": {
-        "mysql-workbench/mwb-dom": "^1.0.0",
+        "mysql-workbench/mwb-dom": "^1.0.1",
         "doctrine/inflector": "^2.1"
     },
     "require-dev": {
