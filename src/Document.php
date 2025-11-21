@@ -18,7 +18,7 @@ class Document
 	/*
 	 * @var \ArrayObject<\Mwb\Orm\Entity> $entities
 	 */
-	protected ?\ArrayObject $entities = Null;
+	public ?\ArrayObject $entities = Null;
 
 	public function __construct(?NameingInterface $nameing=Null) {
 		if ($nameing) {
