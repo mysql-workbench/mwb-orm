@@ -19,7 +19,12 @@ class EntityTest extends TestCase
 	$entity = new Entity($owner);
 	
 	
-	var_dump(True);
-        //self::assertArrayHasKey('controllers', $config);
+        self::assertTrue($owner === $entity->owner);
+	/*
+        self::assertNull($entity->name);
+        self::assertNull($entity->dbTable);
+        self::assertNull($entity->properties);
+	*/
     }
 }
+

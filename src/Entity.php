@@ -12,13 +12,13 @@ use \Mwb\Orm\Property;
 class Entity
 {
 	public Document $owner;
+	public ?string $name = Null;
 	protected NameingAbstract $nameing;
-	public Table $table;
+	public ?Table $dbTable = Null;
 	private ?array $primaryKey = Null;
 	private ?array $foreignPrimary = Null;
 	private ?array $foreignPrimaryUnique = Null;
 
-	protected ?string $name = Null;
 	/*
 	 * @var \ArrayObject<\Mwb\Orm\Property> $properties
 	 */
@@ -33,16 +33,17 @@ class Entity
 		$this->owner = $owner;
 		$this->relations = new \ArrayObject();
 	}
-	public function setTable(Table $table) {
-		$this->table = $table;
+	public function setDbTable(Table $dbTable) {
+		$this->dbTable = $dbTable;
 	}
 	public function setNameingStrategy(NameingAbstract $nameing) {
 		$this->nameing = $nameing;
 	}
+	public function setName(string $entity_name) {
+		$this->name = $entity_name;
+		return $this;
+	}
 	public function getName() {
-		if (!isset($this->name)) {
-			$this->name = $this->nameing->entityify($this->table->name);
-		}
 		return $this->name;
 	}
 	//public function getProperties() {
@@ -54,20 +55,15 @@ class Entity
 	//public function getProperties('FK-PK') {
 	//public function getProperties('FK+PK') {
 	//public function getProperties('-PK-FK') {
-	public function getProperties() {
-		if (isset($this->properties)) {
-			return $this->properties;
-		}
 
-		$this->properties = new \ArrayObject();
-		foreach ($this->table->columns as $column) {
-			$property = new Property($this);
-			$property->setColumn($column);
-			$property->setNameingStrategy($this->nameing);
-			$this->properties[$property->getName()] = $property;
-		}
+	public function setProperties($properties) {
+		$this->properties = $properties;
+		return $this;
+	}
+	public function getProperties() {
 		return $this->properties;
 	}
+
 	public function addRelation(Relation $relation) {
 		$this->relations[] = $relation;
 	}
