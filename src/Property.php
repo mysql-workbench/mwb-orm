@@ -14,7 +14,6 @@ class Property
 
 	public ?string $name = Null;
 	public ?Type $type = Null;
-	//protected ?array $relations = Null;
 
 	public function __construct(Entity $owner) {
 		$this->owner = $owner;

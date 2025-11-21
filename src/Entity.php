@@ -4,7 +4,6 @@ namespace Mwb\Orm;
 
 use \Mwb\Grt\Db\Table;
 
-use \Mwb\Orm\NameingAbstract;
 use \Mwb\Orm\Document;
 use \Mwb\Orm\Relation;
 use \Mwb\Orm\Property;
@@ -13,8 +12,8 @@ class Entity
 {
 	public Document $owner;
 	public ?string $name = Null;
-	protected NameingAbstract $nameing;
 	public ?Table $dbTable = Null;
+
 	private ?array $primaryKey = Null;
 	private ?array $foreignPrimary = Null;
 	private ?array $foreignPrimaryUnique = Null;
@@ -22,12 +21,12 @@ class Entity
 	/*
 	 * @var \ArrayObject<\Mwb\Orm\Property> $properties
 	 */
-	protected ?\ArrayObject $properties = Null;
+	public ?\ArrayObject $properties = Null;
 	/*
 	 * @var \ArrayObject<\Mwb\Orm\Relation> $relations
 	 */
-	protected \ArrayObject $relations;
-	private bool $relationLoaded = False;
+	public \ArrayObject $relations;
+
 
 	public function __construct(Document $owner) {
 		$this->owner = $owner;
@@ -35,9 +34,6 @@ class Entity
 	}
 	public function setDbTable(Table $dbTable) {
 		$this->dbTable = $dbTable;
-	}
-	public function setNameingStrategy(NameingAbstract $nameing) {
-		$this->nameing = $nameing;
 	}
 	public function setName(string $entity_name) {
 		$this->name = $entity_name;
@@ -60,69 +56,12 @@ class Entity
 		$this->properties = $properties;
 		return $this;
 	}
-	public function getProperties() {
+	public function getProperties(?string $filter='') {
 		return $this->properties;
 	}
 
 	public function addRelation(Relation $relation) {
 		$this->relations[] = $relation;
-	}
-	public function getRelations() {
-		if ($this->relationLoaded) {
-			return $this->relations;
-		}
-
-		$entities = $this->owner->getEntities();
-
-		$referencingTable = $this->table;
-
-		$referencingPrimaryKey = [];
-		foreach($referencingTable->indices as $index) {
-			if (!$index->isPrimary) {
-				continue;
-			}
-			foreach($index->columns as $ndexColumn) {
-				$referencingPrimaryKey[] = $ndexColumn->name;
-			}
-		}
-
-		foreach ($referencingTable->foreignKeys as $foreignKey) {
-			$referencingForeignKey = [];
-			
-			foreach($foreignKey->columns as $column) {
-				if ($column) {
-					$referencingForeignKey[] = $column->name;
-				}
-			}
-
-			$type = Null;
-			if (!array_diff($referencingPrimaryKey, $referencingForeignKey)) {
-				$type = Relation::ONE_TO_ONE;
-				$relation = new Relation($type);
-			} else {
-				$type = Relation::MANY_TO_ONE;
-				$relation = new Relation($type);
-			}
-
-			$referencedEntity = $entities[$this->nameing->entityify($foreignKey->referencedTable->name)];
-
-			$relation->setReferencedEntity($referencedEntity);
-			$relation->setReferencingEntity($this);
-			$this->addRelation($relation);
-
-			$relationReversed = Null;	
-			if (Relation::ONE_TO_ONE == $type) 
-				$relationReversed = new Relation(Relation::ONE_TO_ONE);
-			else
-				$relationReversed = new Relation(Relation::ONE_TO_MANY);
-
-			$relationReversed->setReferencedEntity($this);
-			$relationReversed->setReferencingEntity($referencedEntity);
-			$referencedEntity->addRelation($relationReversed);
-		}
-
-		$this->relationLoaded = True;
-		return $this->relations;
 	}
 }
 

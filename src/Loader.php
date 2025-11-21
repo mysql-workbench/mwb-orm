@@ -12,6 +12,66 @@ use Mwb\Orm\Type;
 class Loader {
 	public ?Document $document = Null;
 
+
+
+	public function loadEntityRelations($entity) {
+		$relations = new \ArrayObject();
+
+		$entities = $this->document->entities;
+
+		$referencingTable = $entity->dbTable;
+
+		$referencingPrimaryKey = [];
+		foreach($referencingTable->indices as $index) {
+			if (!$index->isPrimary) {
+				continue;
+			}
+			foreach($index->columns as $ndexColumn) {
+				$referencingPrimaryKey[] = $ndexColumn->name;
+			}
+		}
+
+		foreach ($referencingTable->foreignKeys as $foreignKey) {
+
+			$referencingForeignKey = [];
+			
+			foreach($foreignKey->columns as $column) {
+					if ($column) {
+					$referencingForeignKey[] = $column->name;
+				}
+			}
+
+			$type = Null;
+			if (!array_diff($referencingPrimaryKey, $referencingForeignKey)) {
+				$type = Relation::ONE_TO_ONE;
+				$relation = new Relation($type);
+			} else {
+				$type = Relation::MANY_TO_ONE;
+				$relation = new Relation($type);
+			}
+
+			$referencedEntityName = $this->document->getNameing()->entityify($foreignKey->referencedTable->name);
+
+			if ( isset($entities[$referencedEntityName]) ) {
+				$referencedEntity = $entities[$referencedEntityName];
+
+				$relation->setReferencedEntity($referencedEntity);
+				$relation->setReferencingEntity($entity);
+				$entity->addRelation($relation);
+
+				$relationReversed = Null;	
+				if (Relation::ONE_TO_ONE == $type) 
+					$relationReversed = new Relation(Relation::ONE_TO_ONE);
+				else
+					$relationReversed = new Relation(Relation::ONE_TO_MANY);
+
+				$relationReversed->setReferencedEntity($entity);
+				$relationReversed->setReferencingEntity($referencedEntity);
+				$referencedEntity->addRelation($relationReversed);
+			}
+		}
+	}
+
 	function loadEntityPropertyType($property) {
 		/*
                     $this->column =
@@ -70,19 +130,24 @@ class Loader {
 			//$entity->setNameingStrategy($loader->document->nameing);
 			$entity->setDbTable($dbTable);
 			$entity->setName($this->document->getNameing()->entityify($dbTable->name));
-			$entities[$entity->getName()] = $entity;
-			$this->loadEntityProperties($entity);
+			$entity->properties = $this->loadEntityProperties($entity);
+			$entities[$entity->name] = $entity;
 		}
 
-		return $entities;
+		$this->document->entities = $entities;
+
+		foreach ($entities as $entity) {
+			$this->loadEntityRelations($entity);
+			//var_dump(count($entity->relations));
+		}
 	}
 
-	static public function Load(string $filepath)
+	static public function Load(string $filepath) : Document
 	{
 		$loader = new self();
 		$loader->document = \Mwb\Orm\Document::Load($filepath);
 
-		$loader->document->setEntities($loader->loadEntities());
+		$loader->loadEntities();
 
 		return $loader->document;
 	}
