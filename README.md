@@ -1,4 +1,4 @@
-# ORM classes from MySQL Workbench (*.mwb)
+# ORM classes from mysql-workbench/mwb-dom (*.mwb)
 
 ## Project Overview
 The primary goal of this project is to analyze Mwb\Document (repository `mysql-workbench/mwb-dom`) data for better decision-making Generation. We focus on:
