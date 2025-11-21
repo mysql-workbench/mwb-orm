@@ -9,7 +9,7 @@ use Mwb\Orm\Property;
 
 class Type
 {
-	public Property $owner = Null;
+	public ?Property $owner = Null;
 	public null|SimpleDatatype|UserDatatype $dataType = Null;// Grt_Object
 	protected ?string $name = Null;
 

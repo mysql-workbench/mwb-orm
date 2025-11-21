@@ -3,6 +3,7 @@
 namespace Mwb\Orm;
 
 use \Mwb\Document as MwbDocument;
+use \Mwb\Orm\NameingInterface;
 use \Mwb\Orm\NameingAbstract;
 use \Mwb\Orm\Strategy\NameingSingularize;
 //use \Mwb\Orm\Strategy\NameingCamelCase;
@@ -19,8 +20,18 @@ class Document
 	 */
 	protected ?\ArrayObject $entities = Null;
 
-	public function __construct() {
-		$this->nameing = new NameingSingularize();
+	public function __construct(?NameingInterface $nameing=Null) {
+		if ($nameing) {
+			$this->setNameing($nameing);
+		} else {
+			$this->setNameing(new NameingSingularize());
+		}
+	}
+	public function setNameing($nameing) {
+		$this->nameing = $nameing;
+	}
+	public function getNameing() {
+		return $this->nameing;
 	}
 
 	public function __call(string $name, array $arguments) {
@@ -32,7 +43,7 @@ class Document
 		//throw new BadMethodCallException("Méthode $name inexistante");
 	}
 
-	static function load($filepath, ?Document $instance=Null) {
+	static function Load($filepath, ?Document $instance=Null) {
 		if (!realpath($filepath)) {
 			throw new \Exception("File not found '$filepath'");
 		}
@@ -45,26 +56,19 @@ class Document
 		}
 	}
 
+	function setEntities($entities) {
+		$this->entities = $entities;
+		return $this;
+	}
 	function getEntities() {
-		if (isset($this->entities)) {
-			return $this->entities;
-		}
-
-		$this->entities = new \ArrayObject();
-
-		// mwb->document->grtXml->
-		// mwb->document->grt->
-		// mwb->document->workbench->
-		// mwb->document->grtElement
-		// mwb->document->documentElement
-		foreach ($this->mwb->doc->documentElement->physicalModels[0]->catalog->schemata[0]->tables as $name => $table) {
-			$entity = new Entity($this);
-			$entity->setNameingStrategy($this->nameing);
-			$entity->setTable($table);
-			$this->entities[$entity->getName()] = $entity;
-		}
-
 		return $this->entities;
+	}
+	function setMwbDocument($mwbDocument) {
+		$this->mwb = $mwbDocument;
+		return $this;
+	}
+	function getMwbDocument() {
+		return $this->mwb;
 	}
 }
 
