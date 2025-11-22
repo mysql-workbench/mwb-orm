@@ -26,5 +26,19 @@ class EntityTest extends TestCase
         self::assertNull($entity->properties);
 	*/
     }
+
+    /*
+     * 
+     */
+    public function testGetProperties(): void
+    {
+        $filepath = realpath(dirname(__FILE__, 3).'/vendor/mysql-workbench/mwb-dom/data/sakila_full.mwb');
+
+        $mwbOrm = \Mwb\Orm\Loader::Load($filepath);
+        $entity = $mwbOrm->getEntities()['City'];
+
+        self::assertTrue(1 === count($entity->getPKcolumns()) );
+        self::assertTrue(1 === count($entity->getFKcolumns()) );
+    }
 }
 

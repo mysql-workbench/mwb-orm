@@ -14,10 +14,6 @@ class Entity
 	public ?string $name = Null;
 	public ?Table $dbTable = Null;
 
-	private ?array $primaryKey = Null;
-	private ?array $foreignPrimary = Null;
-	private ?array $foreignPrimaryUnique = Null;
-
 	/*
 	 * @var \ArrayObject<\Mwb\Orm\Property> $properties
 	 */
@@ -26,7 +22,12 @@ class Entity
 	 * @var \ArrayObject<\Mwb\Orm\Relation> $relations
 	 */
 	public \ArrayObject $relations;
+	private ?array $dbPKColumns = Null;
+	private ?array $dbFKColumns = Null;
 
+	private ?array $primaryKey = Null;
+	private ?array $foreignPrimary = Null;
+	private ?array $foreignPrimaryUnique = Null;
 
 	public function __construct(Document $owner) {
 		$this->owner = $owner;
@@ -58,6 +59,20 @@ class Entity
 	}
 	public function getProperties(?string $filter='') {
 		return $this->properties;
+	}
+	/*
+	*/
+	public function setPKColumns($dbPKColumns) {
+		$this->dbPKColumns = $dbPKColumns;
+	}
+	public function getPKColumns() {
+		return $this->dbPKColumns;
+	}
+	public function setFKColumns($dbFKColumns) {
+		return $this->dbFKColumns = $dbFKColumns;
+	}
+	public function getFKColumns() {
+		return $this->dbFKColumns;
 	}
 
 	public function addRelation(Relation $relation) {
