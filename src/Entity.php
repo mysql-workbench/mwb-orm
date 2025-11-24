@@ -22,8 +22,8 @@ class Entity
 	 * @var \ArrayObject<\Mwb\Orm\Relation> $relations
 	 */
 	public \ArrayObject $relations;
-	private ?array $dbPKColumns = Null;
-	private ?array $dbFKColumns = Null;
+	public ?array $dbPKColumns = Null;
+	public ?array $dbFKColumns = Null;
 
 	private ?array $primaryKey = Null;
 	private ?array $foreignPrimary = Null;

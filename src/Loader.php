@@ -13,6 +13,31 @@ class Loader {
 	public ?Document $document = Null;
 
 
+	protected function loadEntityPK($entity) {
+		$primaryColumns = [];
+		foreach($entity->dbTable->indices as $index) {
+			if (!$index->isPrimary) {
+				continue;
+			}
+			foreach($index->columns as $ndexColumn) {
+				if (!$ndexColumn) continue;// FIXE: Make this check in mwb-dom
+				$primaryColumns[$ndexColumn->name] = $entity->dbTable->name;
+			}
+		}
+		return $primaryColumns;
+	}
+
+	protected function loadEntityFK($entity) {
+		$foreignColumns = [];
+		foreach($entity->dbTable->foreignKeys as $foreignKey) {
+			if (!$foreignKey) continue;// FIXE: Make this check in mwb-dom
+			foreach($foreignKey->columns as $column) {
+				if (!$column) continue;// FIXE: Make this check in mwb-dom
+				$foreignColumns[$column->name] = $entity->dbTable->name;
+			}
+		}
+		return $foreignColumns;
+	}
 
 	public function loadEntityRelations($entity) {
 		$relations = new \ArrayObject();
@@ -20,6 +45,47 @@ class Loader {
 		$entities = $this->document->entities;
 
 		$referencingTable = $entity->dbTable;
+
+		foreach ($referencingTable->foreignKeys as $foreignKey) {
+			$relation = Null;
+			$type = Null;
+			if ($foreignKey->many) {
+				$type = Relation::MANY_TO_ONE;
+				$relation = new Relation($type);
+			} else {
+				$type = Relation::ONE_TO_ONE;
+				$relation = new Relation($type);
+			}
+
+			$referencedEntityName = $this->document->getNameing()->entityify($foreignKey->referencedTable->name);
+
+			if ( isset($entities[$referencedEntityName]) ) {
+				$referencedEntity = $entities[$referencedEntityName];
+
+				$relation->setReferencedEntity($referencedEntity);
+				$relation->setReferencingEntity($entity);
+				$entity->addRelation($relation);
+
+				$relationReversed = Null;
+				if (Relation::ONE_TO_ONE == $type) 
+					$relationReversed = new Relation(Relation::ONE_TO_ONE);
+				else
+					$relationReversed = new Relation(Relation::ONE_TO_MANY);
+
+				$relationReversed->setReferencedEntity($entity);
+				$relationReversed->setReferencingEntity($referencedEntity);
+				$referencedEntity->addRelation($relationReversed);
+			}
+		}
+	}
+
+	public function loadEntityRelations_Old($entity) {
+		$relations = new \ArrayObject();
+
+		$entities = $this->document->entities;
+
+		$referencingTable = $entity->dbTable;
+
 
 		$referencingPrimaryKey = [];
 		foreach($referencingTable->indices as $index) {
@@ -130,7 +196,10 @@ class Loader {
 			//$entity->setNameingStrategy($loader->document->nameing);
 			$entity->setDbTable($dbTable);
 			$entity->setName($this->document->getNameing()->entityify($dbTable->name));
-			$entity->properties = $this->loadEntityProperties($entity);
+			$entity->setProperties($this->loadEntityProperties($entity));
+			$entity->setPKColumns($this->loadEntityPK($entity));
+			$entity->setFKColumns($this->loadEntityFK($entity));
+
 			$entities[$entity->name] = $entity;
 		}
 
