@@ -34,26 +34,32 @@ class Document
 		return $this->nameing;
 	}
 
-	public function __call(string $name, array $arguments) {
-		if ($name === 'load') {
-		    // Appel de la méthode statique depuis l'instance
-		    return self::load(array_pop($arguments), $this);
+	public static function __callStatic($name, $arguments)
+	{
+		if ('Load'==$name) {
+			$instance = new self();
+			$instance->_load(...$arguments);
+			return $instance;
+		} else {
 		}
-
-		//throw new BadMethodCallException("Méthode $name inexistante");
 	}
 
-	static function Load($filepath, ?Document $instance=Null) {
+	public function __call($name, $arguments)
+	{
+		if ('load'==$name) {
+			return $this->_load(...$arguments);
+		} else {
+		}
+	}
+
+	private function _load($filepath)
+	{
 		if (!realpath($filepath)) {
 			throw new \Exception("File not found '$filepath'");
 		}
-		if ($instance instanceof \Mwb\Orm\Document) {
-			$instance->mwb = MwbDocument::load($filepath);
-		} else {
-			$instance = new self();
-			$instance->mwb = MwbDocument::load($filepath);
-			return $instance;
-		}
+		$this->mwb = MwbDocument::Load($filepath);
+
+		return $this;
 	}
 
 	function setEntities($entities) {

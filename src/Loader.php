@@ -190,7 +190,6 @@ class Loader {
 
 	function loadEntities() {
 		$entities = new \ArrayObject();
-		
 		foreach ($this->document->getMwbDocument()->doc->documentElement->physicalModels[0]->catalog->schemata[0]->tables as $name => $dbTable) {
 			$entity = new Entity($this->document);
 			//$entity->setNameingStrategy($loader->document->nameing);
