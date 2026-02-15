@@ -19,9 +19,9 @@ class Loader {
 			if (!$index->isPrimary) {
 				continue;
 			}
-			foreach($index->columns as $ndexColumn) {
-				if (!$ndexColumn) continue;// FIXE: Make this check in mwb-dom
-				$primaryColumns[$ndexColumn->name] = $entity->dbTable->name;
+			foreach($index->columns as $indexColumn) {
+				if (!$indexColumn) continue;// FIXE: Make this check in mwb-dom
+				$primaryColumns[$indexColumn->referencedColumn->name] = $entity->dbTable->name;
 			}
 		}
 		return $primaryColumns;

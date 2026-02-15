@@ -78,5 +78,8 @@ class Entity
 	public function addRelation(Relation $relation) {
 		$this->relations[] = $relation;
 	}
+	public function getRelations() {
+		return $this->relations;
+	}
 }
 
